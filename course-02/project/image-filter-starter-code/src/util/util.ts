@@ -1,5 +1,7 @@
 import fs from "fs";
 import Jimp = require("jimp");
+import * as path from "path";
+import {promises as fsPromises} from 'fs';
 
 // filterImageFromURL
 // helper function to download, filter, and save the filtered image locally
@@ -8,32 +10,45 @@ import Jimp = require("jimp");
 //    inputURL: string - a publicly accessible url to an image file
 // RETURNS
 //    an absolute path to a filtered image locally saved file
-export async function filterImageFromURL(inputURL: string): Promise<string> {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const photo = await Jimp.read(inputURL);
-      const outpath =
-        "/tmp/filtered." + Math.floor(Math.random() * 2000) + ".jpg";
-      await photo
-        .resize(256, 256) // resize
-        .quality(60) // set JPEG quality
-        .greyscale() // set greyscale
-        .write(__dirname + outpath, (img) => {
-          resolve(__dirname + outpath);
-        });
-    } catch (error) {
-      reject(error);
-    }
-  });
+const filterImageFromURL = async (inputURL: string): Promise<string> => {
+
+    return Jimp.read(inputURL)
+        .then(async (image) => {
+            const folder = __dirname + process.env.FILE_FOLDER;
+            const folderExist = fs.existsSync(folder);
+            switch (folderExist) {
+                case true:
+                    const files = await fsPromises.readdir(folder);
+                    for (const file of files) {
+                        await fsPromises.unlink(path.resolve(folder, file));
+                    }
+                    break;
+                case false:
+                    fs.mkdirSync(folder);
+                    break;
+
+            }
+            const out_path =
+                folder +"\\filtered_image" + new Date().getTime() + '.' + image.getExtension();
+            await image
+                .resize(256, 256) // resize
+                .quality(60) // set JPEG quality
+                .greyscale() // set greyscale
+                .writeAsync(out_path);
+            return out_path;
+        })
+        .catch(e => {
+            return e.message;
+        })
 }
 
-// deleteLocalFiles
-// helper function to delete files on the local disk
-// useful to cleanup after tasks
-// INPUTS
-//    files: Array<string> an array of absolute paths to files
-export async function deleteLocalFiles(files: Array<string>) {
+const deleteLocalFiles = async (files: Array<string>): Promise<void> => {
   for (let file of files) {
     fs.unlinkSync(file);
   }
+}
+
+export  {
+  deleteLocalFiles,
+    filterImageFromURL
 }

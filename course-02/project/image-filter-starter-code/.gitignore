@@ -39,3 +39,10 @@ venv/
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+
+.npmrc
+.env
+*.jpeg
+*.jpg
+*.png
+src/util/tmp
