@@ -1,17 +1,8 @@
 require('dotenv').config();
 import express from 'express';
 import bodyParser from 'body-parser';
-import {filterImageFromURL, deleteLocalFiles} from './util/util';
-import {IndexRouter} from "./controllers/v0/index.router";
-import {sequelize} from "./util/sequelize";
-import {V0MODELS} from "./models";
+import {filterImageFromURL} from './util/util';
 import {promises as fs} from 'fs';
-
-// sequelize.addModels([User, FeedItem]);
-// sequelize.sync()
-//     .then(() => {
-//       console.log("Database synced")
-//     });
 
 // Init the Express application
 const app = express();
@@ -36,24 +27,25 @@ app.use(bodyParser.json());
 // RETURNS
 //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
 
-app.use('/api/v0/', IndexRouter);
-
 app.get("/filteredimage", async (req, res) => {
   let image_url: string = req.query['image_url'].toString();
 
   if(!image_url || image_url.length === 0)
     return res.status(400).send({error: "\'image_url\' parameter is required"});
 
+  const ext = image_url.split('.');
+  if (ext.length < 2)
+      return res.status(400).send({error: "Invalid file type. Image expected"})
+  const validExt = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'gif']
+  if (!validExt.includes(ext[ext.length-1]))
+      return res.status(400).send({error: "Invalid file type. Image expected"})
   await filterImageFromURL(image_url)
       .then(async (path) => {
         fs.readFile(path)
-            .then(async (file) => {
+            .then(async () => {
               res.sendFile(path);
             })
       });
-  // res.download(filteredpath);
-  // return res.send("filteredpath");
-  // return await deleteLocalFiles([filteredpath])
 })
 
 /**************************************************************************** */
@@ -71,10 +63,4 @@ app.get( "/", async ( req, res ) => {
 app.listen( port, () => {
   console.log( `server running http://localhost:${ port }` );
   console.log( `press CTRL+C to stop server` );
-    sequelize.addModels(V0MODELS);
-    sequelize.sync()
-        .then(() => {
-            console.log("Database synced")
-        });
-
 } );

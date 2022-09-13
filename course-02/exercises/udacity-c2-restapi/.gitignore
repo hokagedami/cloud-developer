@@ -40,4 +40,7 @@ venv/
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
-/.env
+/course-02/project/image-filter-starter-code/.env
+/course-02/project/image-filter-starter-code/www
+/course-02/exercises/udacity-c2-restapi/.env
+/course-02/exercises/udacity-c2-restapi/www

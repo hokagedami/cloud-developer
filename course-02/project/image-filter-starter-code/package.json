@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean": "rimraf www/ || true",
+    "tsc": "tsc",
     "build": "npm run clean && tsc && cp package.json www/package.json && cd www && zip -r udagram.zip . && cd ..",
     "dev": "ts-node-dev --respawn --transpile-only ./src/server.ts"
   },
@@ -20,27 +21,16 @@
   },
   "homepage": "https://github.com/hokagedami/cloud-developer/blob/master/course-02/project/image-filter-starter-code/README.md",
   "dependencies": {
-    "@types/bcrypt": "^3.0.0",
-    "@types/jsonwebtoken": "^8.3.2",
-    "aws-sdk": "^2.492.0",
-    "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",
     "codelyzer": "^6.0.2",
     "dotenv": "^16.0.2",
-    "email-validator": "^2.0.4",
     "express": "^4.17.1",
-    "jimp": "^0.16.1",
-    "jsonwebtoken": "^8.5.1",
-    "pg": "^8.2.1",
-    "reflect-metadata": "^0.1.13",
-    "sequelize": "^4.44.4",
-    "sequelize-typescript": "^0.6.11"
+    "jimp": "^0.16.1"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.33",
     "@types/express": "^4.17.9",
     "@types/node": "^11.15.42",
-    "@types/sequelize": "^4.28.9",
     "@types/validator": "^10.11.3",
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
