@@ -33,10 +33,10 @@ app.get("/filteredimage", async (req, res) => {
   if(!image_url || image_url.length === 0)
     return res.status(400).send({error: "\'image_url\' parameter is required"});
 
-  const ext = image_url.split('.');
+  let ext: string[] = image_url.split('.');
   if (ext.length < 2)
       return res.status(400).send({error: "Invalid file type. Image expected"})
-  const validExt = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'gif']
+  let validExt: string[] = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'gif']
   if (!validExt.includes(ext[ext.length-1]))
       return res.status(400).send({error: "Invalid file type. Image expected"})
   await filterImageFromURL(image_url)

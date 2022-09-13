@@ -10,16 +10,16 @@ import {promises as fsPromises} from 'fs';
 //    inputURL: string - a publicly accessible url to an image file
 // RETURNS
 //    an absolute path to a filtered image locally saved file
-const filterImageFromURL = async (inputURL: string): Promise<string> => {
+async function filterImageFromURL(inputURL: string): Promise<string>{
 
     return Jimp.read(inputURL)
         .then(async (image) => {
-            const folder = __dirname + process.env.FILE_FOLDER;
-            const folderExist = fs.existsSync(folder);
+            let folder: string = __dirname + process.env.FILE_FOLDER;
+            let folderExist: boolean = fs.existsSync(folder);
             switch (folderExist) {
                 case true:
-                    const files = await fsPromises.readdir(folder);
-                    for (const file of files) {
+                    const files: string[] = await fsPromises.readdir(folder);
+                    for (let file of files) {
                         await fsPromises.unlink(path.resolve(folder, file));
                     }
                     break;
@@ -28,7 +28,7 @@ const filterImageFromURL = async (inputURL: string): Promise<string> => {
                     break;
 
             }
-            const out_path =
+            let out_path: string =
                 folder +"\\filtered_image" + new Date().getTime() + '.' + image.getExtension();
             await image
                 .resize(256, 256) // resize
@@ -42,7 +42,7 @@ const filterImageFromURL = async (inputURL: string): Promise<string> => {
         })
 }
 
-const deleteLocalFiles = async (files: Array<string>): Promise<void> => {
+async function deleteLocalFiles(files: Array<string>): Promise<void>{
   for (let file of files) {
     fs.unlinkSync(file);
   }
