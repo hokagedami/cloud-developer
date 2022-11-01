@@ -14,7 +14,7 @@ import {
   Loader
 } from 'semantic-ui-react'
 
-import { createTodo, deleteTodo, getTodos, patchTodo } from '../api/todos-api'
+import { createTodo, deleteTodo, getTodos, patchTodo, validateAttachment } from '../api/todos-api'
 import Auth from '../auth/Auth'
 import { Todo } from '../types/Todo'
 
@@ -51,8 +51,12 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
         name: this.state.newTodoName,
         dueDate
       })
+      const attachmentValid = await validateAttachment(
+        this.props.auth.getIdToken(),
+        newTodo.todoId)
+      newTodo.attachmentUrl = attachmentValid.urlValid ? newTodo.attachmentUrl : undefined
       this.setState({
-        todos: [...this.state.todos, newTodo],
+        todos: [newTodo, ...this.state.todos],
         newTodoName: ''
       })
     } catch {

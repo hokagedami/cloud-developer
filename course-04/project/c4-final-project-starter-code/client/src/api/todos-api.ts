@@ -3,6 +3,7 @@ import { Todo } from '../types/Todo';
 import { CreateTodoRequest } from '../types/CreateTodoRequest';
 import Axios from 'axios'
 import { UpdateTodoRequest } from '../types/UpdateTodoRequest';
+import { AttachmentValidity } from '../types/AttachmentValidity'
 
 export async function getTodos(idToken: string): Promise<Todo[]> {
   const response = await Axios.get(`${apiEndpoint}/todos`, {
@@ -65,6 +66,20 @@ export async function getUploadUrl(
   return response.data.uploadUrl
 }
 
-export async function uploadFile(uploadUrl: string, file: Buffer): Promise<void> {
+export async function uploadFile(
+  uploadUrl: string,
+  file: Buffer): Promise<void> {
   await Axios.put(uploadUrl, file)
+}
+
+export async function validateAttachment(
+  idToken: string,
+  todoId: string): Promise<AttachmentValidity>{
+  const response = await Axios.get(`${apiEndpoint}/todos/${todoId}/attachmentUrl`, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${idToken}`
+    }
+  })
+  return response.data
 }

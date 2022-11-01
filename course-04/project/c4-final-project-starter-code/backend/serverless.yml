@@ -176,6 +176,21 @@ functions:
           - xRay:PutTraceSegments
         Resource: arn:aws:s3:::${self:provider.environment.ATTACHMENT_S3_BUCKET}/*
 
+  ValidateAttachmentUrl:
+    handler: src/lambda/http/validateAttachmentUrl.handler
+    events:
+      - http:
+          method: get
+          path: todos/{todoId}/attachmentUrl
+          cors: true
+          authorizer: Auth
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - s3:*
+          - xRay:PutTraceSegments
+        Resource: arn:aws:s3:::${self:provider.environment.ATTACHMENT_S3_BUCKET}/*
+
 resources:
   Resources:
     # Add necessary AWS resources. You will need at least the following AWS resources
