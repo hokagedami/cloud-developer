@@ -3,8 +3,9 @@ import * as AWSXRay from 'aws-xray-sdk'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 import { createLogger } from '../utils/logger'
 import { TodoItem } from '../models/TodoItem'
-import { TodoUpdate } from '../models/TodoUpdate';
+import { TodoUpdate } from '../models/TodoUpdate'
 import { Types } from 'aws-sdk/clients/s3'
+import Axios from 'axios'
 
 const XAWS = AWSXRay.captureAWS(AWS)
 
@@ -19,7 +20,6 @@ export class TodoAccess {
   }
 
   async GetUserToDos(userId: string): Promise<TodoItem[]> {
-    console.log("Getting all todo");
     logger.info("Getting all todo");
 
     const params = {
@@ -34,10 +34,12 @@ export class TodoAccess {
     };
 
     const result = await this.docClient.query(params).promise();
-    console.log(result);
-    const items = result.Items;
-
-    return items as TodoItem[];
+    const items = result.Items as TodoItem[]
+    return await Promise.all(items.map(async (item) => {
+      const urlValid = await this.ValidateAttachmentUrl(item["todoId"]);
+      item["attachmentUrl"] = urlValid ? item["attachmentUrl"] : null
+      return item
+    }));
   }
 
   async CreateToDo(todoItem: TodoItem): Promise<TodoItem> {
@@ -47,11 +49,15 @@ export class TodoAccess {
       TableName: this.todoTable,
       Item: todoItem,
     };
-
+    const attachmentIsValid = this.ValidateAttachmentUrl(todoItem["todoId"])
+    let item = todoItem as TodoItem;
+    item["attachmentUrl"] = attachmentIsValid ? item["attachmentUrl"] : null
+    params.Item = item
+    logger.info("param:: "+ params)
+    logger.info("item:: "+ item)
     const result = await this.docClient.put(params).promise();
-    logger.info("result::", result);
-
-    return todoItem as TodoItem;
+    logger.info("result:: "+ result);
+    return item;
   }
 
   async UpdateToDo(todoUpdate: TodoUpdate, todoId: string, userId: string): Promise<TodoUpdate> {
@@ -112,5 +118,30 @@ export class TodoAccess {
     console.log(url);
 
     return url as string;
+  }
+
+  async ValidateAttachmentUrl(todoId: string): Promise<boolean>{
+    try {
+      const url = this.s3Client.getSignedUrl('getObject', {
+        Bucket: this.s3BucketName,
+        Key: todoId,
+        Expires: 6000,
+      });
+      const urlWithParams = url.split("?");
+      const params = urlWithParams[1]
+      const paramsObject = {}
+      for (let i = 0; i < params.length; i++) {
+        const paramSplit = params[i].split("=");
+        paramsObject[paramSplit[0]] = paramSplit[1]
+      }
+      await Axios.get(urlWithParams[0], {
+        params: paramsObject
+      })
+      return true
+    }
+    catch (e) {
+      logger.error("error getting bucket item::" + e)
+      return false
+    }
   }
 }
